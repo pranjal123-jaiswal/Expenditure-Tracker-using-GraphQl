@@ -43,8 +43,8 @@ const Card = ({   transaction = {} , authUser }) => {
   const formattedDate = date ? formatDate(date) : '';
 
    const [deleteTransaction , {loading}] =useMutation(DELETE_TRANSCATION , {
-	refetchQueries: [{query: GET_TRANSCATION , 
-						query: category_staticis}]
+	refetchQueries: [{query: GET_TRANSCATION } , 
+					{query: category_staticis}]
    })
 
 
