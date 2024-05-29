@@ -26,6 +26,19 @@ query GetTranscaionById($id: ID!) {
         amount
         location
         date
+        user{
+            name
+            username
+            profilePicture
+        }
     }
 }
+`
+export const category_staticis = gql `
+    query category_staticis {
+        category_staticis{
+            category
+        totalAmount
+        }
+    }
 `

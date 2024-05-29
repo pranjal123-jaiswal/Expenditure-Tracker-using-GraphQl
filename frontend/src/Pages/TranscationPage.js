@@ -5,6 +5,7 @@ import { UPDATE_TRANSCATION } from "../graphql/Mutations/transcation.mutation";
 import { useQuery , useMutation } from "@apollo/client";
 import { useParams } from "react-router-dom";
 import {toast} from "react-hot-toast"
+import {category_staticis , GET_TRANSCATION} from "../graphql/Queries/transcation.query"
 
 const TransactionPage = () => {
 	const {id} = useParams()
@@ -12,7 +13,10 @@ const TransactionPage = () => {
 	const {data , loading , error} = useQuery(GET_TRANSCATION_BY_ID , {
 		variables: {id: id}
 	})
-	const [updateTransaction, {loading: loadingUpdate }] = useMutation(UPDATE_TRANSCATION)
+	const [updateTransaction, {loading: loadingUpdate }] = useMutation(UPDATE_TRANSCATION , {
+		// refetchQueries: [{query: category_staticis} ,{ query: GET_TRANSCATION}]
+		refetchQueries: [{ query: category_staticis }, { query: GET_TRANSCATION }]
+	} )
 	const [formData, setFormData] = useState({
 		description:  !loading ? data?.transaction?.description : "",
 		paymentType: !loading ? data?.transaction?.paymentType : "",

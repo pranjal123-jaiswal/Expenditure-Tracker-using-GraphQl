@@ -1,4 +1,5 @@
 import Transaction from "../models/transcationmodels.js";
+import User from "../models/usermodels.js"
 
 const transactionResolver = {
     Query: {
@@ -23,6 +24,31 @@ const transactionResolver = {
                 console.error("Error getting transaction:", err);
                 throw new Error("Error getting transaction");
             }
+        },
+
+        category_staticis: async( _, __, context) => {
+            try {
+                if(!context.getUser()) throw new Error("Unauthorized")
+                const userId = context.getUser()._id
+                console.log("User object:", userId);
+                const transactions = await Transaction.find({userId})
+                // console.log("transactions" , transactio`ns)
+                const categoryMap = {}
+
+                transactions.forEach((transaction) => {
+                    if (!categoryMap[transaction.category]) {
+                        categoryMap[transaction.category] = 0;
+                    }
+                    categoryMap[transaction.category] += transaction.amount;
+                });
+    
+                // categoryMap = { expense: 125, investment: 100, saving: 50 }
+    
+                return Object.entries(categoryMap).map(([category, totalAmount]) => ({ category, totalAmount }));
+            }catch(err){
+                console.error("Error getting category statics:", err);
+            }
+
         }
     },
     Mutation: {
@@ -63,6 +89,18 @@ const transactionResolver = {
             } catch (err) {
                 console.error("Error deleting transaction:", err);
                 throw new Error("Error deleting transaction");
+            }
+        }
+    },
+    Transaction: {
+        user: async(parent) => {
+            const userId = parent.userId    
+            try{
+                const user = await User.findById(userId)
+                return user
+            } catch(err){
+                throw new Error("Error")
+
             }
         }
     }

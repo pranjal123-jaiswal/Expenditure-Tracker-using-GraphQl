@@ -1,42 +1,105 @@
-import React from "react";
+import React , {useEffect , useState} from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { MdLogout } from "react-icons/md";
 import toast from "react-hot-toast";
-import { useMutation } from "@apollo/client";
+import { useMutation , useQuery } from "@apollo/client";
 
 import Cards from "../components/Cards";
 import TransactionForm from "../components/TranscationForm";
 import { LOGOUT } from "../graphql/Mutations/user.mutation";
 import { GET_AUTHENTICATE_USER } from "../graphql/Queries/user.query";
+import {category_staticis} from "../graphql/Queries/transcation.query"
+// import { useEffect } from "react";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const HomePage = () => {
-    const chartData = {
-        labels: ["Saving", "Expense", "Investment"],
-        datasets: [
-            {
-                label: "%",
-                data: [13, 8, 3],
-                backgroundColor: ["rgba(75, 192, 192)", "rgba(255, 99, 132)", "rgba(54, 162, 235)"],
-                borderColor: ["rgba(75, 192, 192)", "rgba(255, 99, 132)", "rgba(54, 162, 235, 1)"],
-                borderWidth: 1,
-                borderRadius: 30,
-                spacing: 10,
-                cutout: 130,
-            },
-        ],
-    };
+// const chartData = {
+//     labels: ["Saving", "Expense", "Investment"],
+//     datasets: [
+//         {
+//             label: "%",
+//             data: [13, 8, 3],
+//             backgroundColor: ["rgba(75, 192, 192)", "rgba(255, 99, 132)", "rgba(54, 162, 235)"],
+//             borderColor: ["rgba(75, 192, 192)", "rgba(255, 99, 132)", "rgba(54, 162, 235, 1)"],
+//             borderWidth: 1,
+//             borderRadius: 30,
+//             spacing: 10,
+//             cutout: 130,
+//         },
+//     ],
+// };
 
-    const [logout, { loading }] = useMutation(LOGOUT, {
-        refetchQueries: [{ query: GET_AUTHENTICATE_USER }],
-    });
+const HomePage = () => {
+    // const [logout, { loading , client }] = useMutation(LOGOUT, {
+    //     refetchQueries: [{ query: GET_AUTHENTICATE_USER }],
+    // });
+	const [logout, { loading , client }] = useMutation(LOGOUT , {
+		refetchQueries: [{ query: GET_AUTHENTICATE_USER }],
+	});
+    
+    const {data: authData} = useQuery(GET_AUTHENTICATE_USER)
+	const {data , loading: loadQuery , error} = useQuery(category_staticis , {
+		skip: !authData || !authData.authUser
+	})
+    // console.log("category_staticis", data)
+
+    const [chartData, setChartData] = useState({
+		labels: [],
+		datasets: [
+			{
+				label: "$",
+				data: [],
+				backgroundColor: [],
+				borderColor: [],
+				borderWidth: 1,
+				borderRadius: 30,
+				spacing: 10,
+				cutout: 130,
+			},
+		],
+	});
+
+    useEffect(() => {
+		if (data?.category_staticis) {
+			const categories = data.category_staticis.map((stat) => stat.category);
+			const totalAmounts = data.category_staticis.map((stat) => stat.totalAmount);
+
+			const backgroundColors = [];
+			const borderColors = [];
+
+			categories.forEach((category) => {
+				if (category === "saving") {
+					backgroundColors.push("rgba(75, 192, 192)");
+					borderColors.push("rgba(75, 192, 192)");
+				} else if (category === "expense") {
+					backgroundColors.push("rgba(255, 99, 132)");
+					borderColors.push("rgba(255, 99, 132)");
+				} else if (category === "investment") {
+					backgroundColors.push("rgba(54, 162, 235)");
+					borderColors.push("rgba(54, 162, 235)");
+				}
+			});
+
+			setChartData((prev) => ({
+				labels: categories,
+				datasets: [
+					{
+						...prev.datasets[0],
+						data: totalAmounts,
+						backgroundColor: backgroundColors,
+						borderColor: borderColors,
+					},
+				],
+			}));
+		}
+	}, [data]);
 
     const handleLogout = async () => {
         console.log("Logging out...");
         try {
             await logout();
+            // client.resetStore()
         } catch (err) {
             toast.error(err.message);
         }
@@ -50,7 +113,7 @@ const HomePage = () => {
                         Spend wisely, track wisely
                     </p>
                     <img
-                        src={"https://tecdn.b-cdn.net/img/new/avatars/2.webp"}
+                        src={authData?.authUser?.profilePicture}
                         className='w-11 h-11 rounded-full border cursor-pointer'
                         alt='Avatar'
                     />

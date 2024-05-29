@@ -9,7 +9,7 @@ import {formatDate} from "../utils/formatDate"
 import {toast} from "react-hot-toast"
 import {DELETE_TRANSCATION} from "../graphql/Mutations/transcation.mutation"
 import { useMutation } from "@apollo/client";
-import {GET_TRANSCATION} from "../graphql/Queries/transcation.query"
+import {GET_TRANSCATION , category_staticis} from "../graphql/Queries/transcation.query"
 
 
 
@@ -20,7 +20,7 @@ const categoryColorMap = {
 	// Add more categories and corresponding color classes as needed
 };
 
-const Card = ({key ,  transaction = {} }) => {
+const Card = ({   transaction = {} , authUser }) => {
 	let {category = '',
     amount = 0,
     location = '',
@@ -43,7 +43,8 @@ const Card = ({key ,  transaction = {} }) => {
   const formattedDate = date ? formatDate(date) : '';
 
    const [deleteTransaction , {loading}] =useMutation(DELETE_TRANSCATION , {
-	refetchQueries: [{query: GET_TRANSCATION}]
+	refetchQueries: [{query: GET_TRANSCATION , 
+						query: category_staticis}]
    })
 
 
@@ -91,7 +92,7 @@ const Card = ({key ,  transaction = {} }) => {
 				<div className='flex justify-between items-center'>
 					<p className='text-xs text-black font-bold'>{formattedDate}</p>
 					<img
-						src={"https://tecdn.b-cdn.net/img/new/avatars/2.webp"}
+						src={authUser?.profilePicture}
 						className='h-8 w-8 border rounded-full'
 						alt=''
 					/>

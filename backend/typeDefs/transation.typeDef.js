@@ -8,11 +8,18 @@ const transactionTypeDef = `
         amount: Float!
         location: String
         date: String!
+        user: User!
+    }
+
+    type category_staticis {
+        category: String!
+        totalAmount: Float!
     }
 
     type Query {
         transactions: [Transaction!]
         transaction(transactionId: ID!): Transaction
+        category_staticis: [category_staticis!]
     }
 
     type Mutation {
